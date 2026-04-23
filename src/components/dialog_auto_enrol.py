@@ -31,7 +31,7 @@ def auto_enroll_dialog(subject_code):
         .execute()
     )
     if check.data:
-        st.info("Youre already enrolled!")
+        st.info("You're already enrolled!")
         if st.button("Got it!"):
             st.query_params.clear()
             st.rerun()
