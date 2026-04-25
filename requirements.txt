@@ -1,3 +1,5 @@
+streamlit # For building the web application
+
 numpy
 pandas
 
@@ -16,7 +18,6 @@ bcrypt # For hashing users password
 segno # Library for generating QR Code from URL
 pillow # For image preprocessing
 
-streamlit # For building the web application
 
 # For voice recognition
 librosa

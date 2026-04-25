@@ -18,6 +18,7 @@ from src.database.db import (
     create_teacher,
     get_teacher_subjects,
     teacher_login,
+    get_attendance_for_teacher,
 )
 from src.pipelines.face_pipeline import predict_attendance
 from src.UI.base_layout import style_background_dashboard, style_base_layout
@@ -323,6 +324,52 @@ def teacher_tab_manage_subjects():
 
 def teacher_tab_attendance_records():
     st.header("Attendance Records")
+
+    teacher_id = st.session_state.teacher_data["teacher_id"]
+
+    records = get_attendance_for_teacher(teacher_id)
+
+    if not records:
+        return
+
+    data = []
+
+    for r in records:
+        ts = r.get("timestamp")
+
+        data.append(
+            {
+                "ts_group": ts.split(".")[0] if ts else None,
+                "Time": datetime.fromisoformat(ts).strftime("%Y-%m-%d %I:%M %p")
+                if ts
+                else "N/A",
+                "Subject": r["subjects"]["name"],
+                "Subject Code": r["subjects"]["subject_code"],
+                "is_present": bool(r.get("is_present", False)),
+            }
+        )
+
+    df = pd.DataFrame(data)
+
+    summary = (
+        df.groupby(["ts_group", "Time", "Subject", "Subject Code", "is_present"])
+        .agg(Present_Count=("is_present", "sum"), Total_Count=("is_present", "count"))
+        .reset_index()
+    )
+
+    summary["Attendance Stats"] = (
+        "✅ "
+        + summary["Present_Count"].astype(str)
+        + "/"
+        + summary["Total_Count"].astype(str)
+        + " Students"
+    )
+
+    display_df = summary.sort_values(by="ts_group", ascending=False)[
+        ["Time", "Subject", "Subject Code", "Attendance Stats"]
+    ]
+
+    st.dataframe(display_df, width="stretch", hide_index=True)
 
 
 def login_teacher(username, password):
